@@ -1,6 +1,6 @@
 # ChatGPT Clone
 
-This is a minimal working example of ChatGPT, outside of (ChatGPT)[https://chat.openai.com/].
+This is a minimal working example of ChatGPT, outside of [ChatGPT](https://chat.openai.com/).
 
 In order to conduct human-subjects experiments with generative AI systems, we needed ChatGPT with a sort of psuedo federated access model so we could provision access to ChatGPT while conducting remote and unsupervised experiments.
 
