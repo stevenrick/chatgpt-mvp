@@ -8,7 +8,7 @@ The client side of this project was bootstrapped with [Create React App](https:/
 
 The server side uses an Express application as an API in order to avoid leaking OpenAI access tokens on the client side.
 
-Will log usage (input, output, and unix timestamp) to `usage.text` in `/server/public`.
+Will log usage (input, output, and unix timestamp) to `usage.text` in `/server`.
 
 Also accepts a URL query `?user=` if you want to log unique user values.
 
