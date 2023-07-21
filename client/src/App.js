@@ -10,10 +10,6 @@ class App extends Component {
   };
 
   callBackendAPI = async () => {
-    // let requestOptions = {
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(this.state.chat)
-    // }
     var postData = this.state.chat;
     
     let axiosConfig = {
@@ -35,7 +31,18 @@ class App extends Component {
     this.showLoading();
     this.callBackendAPI()
       .then(res => this.setState({ chat: [...this.state.chat, {"role": "assistant", "content": res.data}]}, this.createGPTChatBubble(res.data)))
-      .catch(err => console.log(err));
+      .catch(err => this.handleError(err));
+  }
+
+  handleTryAgain = (e) => {
+    console.log("try again clicked");
+    e.target.remove();
+    this.sendMessage();
+  }
+
+  handleError = (err) => {
+    console.log(err);
+    this.createErrorBubble();
   }
 
   handleEnterKeyDown = () => {
@@ -72,6 +79,18 @@ class App extends Component {
     loadingBubble.innerText = "Thinking...";
     threadDiv.appendChild(loadingBubble);
     loadingBubble.scrollIntoView({behavior: 'smooth'});
+  }
+
+  createErrorBubble() {
+    this.hideLoading();
+    let threadDiv = document.getElementById("thread");
+    let errorBubble = document.createElement("div");
+    errorBubble.classList.add("message");
+    errorBubble.classList.add("error");
+    errorBubble.innerText = "Something went wrong... click here to try again";
+    errorBubble.onclick = this.handleTryAgain;
+    threadDiv.appendChild(errorBubble);  
+    errorBubble.scrollIntoView({behavior: 'smooth'});
   }
 
   createGPTChatBubble(gptInput) {
