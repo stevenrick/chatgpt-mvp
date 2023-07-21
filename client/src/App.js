@@ -4,13 +4,23 @@ import './App.css';
 import './Chat.css';
 
 class App extends Component {
+  
   state = {
     textAreaInput: "",
     chat: [],
   };
 
+  getUserParam = () => {
+    const queryParams = new URLSearchParams(window.location.search);
+    return queryParams.get("user");
+  }
+
   callBackendAPI = async () => {
-    var postData = this.state.chat;
+    var postData = {
+      time: Date.now(),
+      chat: this.state.chat,
+      user: this.getUserParam()
+    };
     
     let axiosConfig = {
       headers: {
