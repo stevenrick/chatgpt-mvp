@@ -32,6 +32,7 @@ class App extends Component {
   }
 
   sendMessage = () => {
+    this.showLoading();
     this.callBackendAPI()
       .then(res => this.setState({ chat: [...this.state.chat, {"role": "assistant", "content": res.data}]}, this.createGPTChatBubble(res.data)))
       .catch(err => console.log(err));
@@ -57,8 +58,24 @@ class App extends Component {
     }
   }
 
+  hideLoading() {
+    let loadingBubble = document.getElementById("loadingBubble");
+    loadingBubble.remove();
+  }
+
+  showLoading() {
+    let threadDiv = document.getElementById("thread");
+    let loadingBubble = document.createElement("div");
+    loadingBubble.id = "loadingBubble";
+    loadingBubble.classList.add("message");
+    loadingBubble.classList.add("loading");
+    loadingBubble.innerText = "Thinking...";
+    threadDiv.appendChild(loadingBubble);
+    loadingBubble.scrollIntoView({behavior: 'smooth'});
+  }
+
   createGPTChatBubble(gptInput) {
-    console.log(gptInput);
+    this.hideLoading();
     let threadDiv = document.getElementById("thread");
     let gptChatBubble = document.createElement("div");
     gptChatBubble.classList.add("message");
@@ -82,7 +99,7 @@ class App extends Component {
     return (
       <div className="App">
         <header className="App-header">
-          <h1 className="App-title">ChatGPT Clone</h1>
+          <h2 className="App-title">ChatGPT Clone</h2>
           <div id="thread" className="chat-container"/>
           <div className="textarea-container">
             <textarea

@@ -24,6 +24,15 @@
     font-size: calc(10px + 1vmin);
 }
 
+.message {
+    animation: fadeIn 0.5s
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+
 /* Style the user's message */
 .message.from-user {
     width: 45%;
@@ -42,6 +51,18 @@
 .message.from-chatbot {
     width: 45%;
     background-color: #e1f5fe;
+    color: #333;
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: left;
+}
+
+.message.loading {
+    width: 45%;
+    background-color: #dcdcdc;
     color: #333;
     padding: 10px;
     margin-top: 5px;
