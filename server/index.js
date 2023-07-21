@@ -7,7 +7,7 @@ require('dotenv').config();
 const PORT = process.env.PORT || 3001;
 
 const app = express();
-const filePath = __dirname + '/public/usage.txt';
+const filePath = __dirname + '/usage.txt';
 const writer = fs.createWriteStream(filePath, {flags:'a'});
 
 app.use(express.json());
