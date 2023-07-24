@@ -5,15 +5,16 @@ const fs = require('fs');
 require('dotenv').config();
 
 const PORT = process.env.PORT || 3001;
+const BASE_URL = process.env.BASE_URL || "";
 
 const app = express();
 const filePath = __dirname + '/usage.txt';
 const writer = fs.createWriteStream(filePath, {flags:'a'});
 
 app.use(express.json());
-app.use(express.static(path.resolve(__dirname, '../client/build')));
+app.use(BASE_URL, express.static(path.resolve(__dirname, '../client/build')));
 
-app.post("/api", (req, res) => {
+app.post(BASE_URL+"/api", (req, res) => {
   let requestBody = {
     "model": "gpt-3.5-turbo",
     "temperature": 0.7,
@@ -22,7 +23,7 @@ app.post("/api", (req, res) => {
   let axiosConfig = {
     headers: {
       "Content-Type": "application/json",
-      "Authorization": "Bearer "+process.env.KEY
+      "Authorization": "Bearer "+process.env.OPEN_API_KEY
     }
   };
   axios.post("https://api.openai.com/v1/chat/completions", requestBody, axiosConfig).then(response => {

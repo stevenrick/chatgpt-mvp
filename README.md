@@ -14,7 +14,9 @@ Also accepts a URL query `?user=` if you want to log unique user values.
 
 ## Setup & Run
 
-Requires a `.env` file in the `/server` folder that has `KEY=[Insert your OpenAI API key here]` defined
+Requires a `.env` file in the `/server` folder that has `OPEN_API_KEY=[Insert your OpenAI API key here]` defined
+
+Optional parameters inside `.env` include `PORT` and `BASE_URL` if you need a specific port or are running from a subdirectory. NOTE: For subdirectory support you should also add `homepage:"[path/to/subdirectory]"` inside `client/package.json`.
 
 To run the front end alone, `cd client` and `npm start`
 
