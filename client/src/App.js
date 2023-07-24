@@ -28,7 +28,7 @@ class App extends Component {
       }
     };
 
-    const response = await axios.post('/api', postData, axiosConfig)
+    const response = await axios.post('api', postData, axiosConfig)
 
     if (response.status !== 200) {
       throw Error(response);
