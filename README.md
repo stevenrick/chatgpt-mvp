@@ -1,4 +1,4 @@
-# ChatGPT Clone
+# ChatGPT MVP
 
 This is a minimal working example of ChatGPT, outside of [ChatGPT](https://chat.openai.com/).
 
