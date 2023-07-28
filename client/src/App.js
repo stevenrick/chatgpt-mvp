@@ -7,7 +7,9 @@ class App extends Component {
   
   state = {
     textAreaInput: "",
-    chat: [],
+    chatLog: {},
+    currentChatId: null,
+    currentChatThread: []
   };
 
   getUserParam = () => {
@@ -18,7 +20,7 @@ class App extends Component {
   callBackendAPI = async () => {
     var postData = {
       time: Date.now(),
-      chat: this.state.chat,
+      chat: this.state.currentChatThread,
       user: this.getUserParam()
     };
     
@@ -40,8 +42,92 @@ class App extends Component {
   sendMessage = () => {
     this.showLoading();
     this.callBackendAPI()
-      .then(res => this.setState({ chat: [...this.state.chat, {"role": "assistant", "content": res.data}]}, this.createGPTChatBubble(res.data)))
+      .then(res => this.setState({ currentChatThread: [...this.state.currentChatThread, {"role": "assistant", "content": res.data}]}, this.createGPTChatBubble(res.data)))
+      .then(() => {
+        this.setState(prevState => {
+          let chatLog = prevState.chatLog
+          chatLog[prevState.currentChatId] = prevState.currentChatThread;
+          return { chatLog }
+        })
+        this.hideLoading();
+      })
       .catch(err => this.handleError(err));
+  }
+
+  clearThread = () => {
+    let thread = document.getElementById("thread");
+    while (thread.firstChild) {
+      thread.removeChild(thread.firstChild);
+    }
+    this.setState({ currentChatThread: [] });
+  }
+
+  populateThread = () => {
+    let chatThread = this.state.chatLog[this.state.currentChatId];
+    this.setState({ currentChatThread: chatThread });
+    chatThread.forEach(msg => {
+      console.log(msg)
+      if (msg.role === "user"){
+        this.createUserChatBubble(msg.content);
+      }
+      if (msg.role === "assistant"){
+        this.createGPTChatBubble(msg.content);
+      }
+    });
+  }
+
+  resetThread = () => {
+    this.clearThread();
+    this.populateThread();
+  }
+
+  startNewChat = () => {
+    this.resetThread();
+    this.createNewChatButton();
+    this.debug();
+  }
+
+  handlePriorChatClick = (e) => {
+    let activeChat = document.getElementsByClassName("active");
+    if (activeChat.length > 0){
+      if (e.target.id !== activeChat[0].id){
+        activeChat[0].classList.remove("active");
+        e.target.classList.add("active");
+        this.setState({ currentChatId: e.target.id }, this.resetThread);
+      }
+    }
+  }
+
+  createNewChatButton = () => {
+    let chatHistory = document.getElementById("chat-history");
+    let newChatButton = document.createElement("button");
+    newChatButton.id = this.state.currentChatId;
+    newChatButton.classList.add("priorChatButton");
+    newChatButton.classList.add("active");
+    newChatButton.innerText = "Chat " + (this.state.currentChatId + 1);
+    newChatButton.onclick = this.handlePriorChatClick;
+    chatHistory.appendChild(newChatButton);
+  }
+
+  debug = () => {
+    console.log("chatLog",this.state.chatLog);
+    console.log("currentChatThread",this.state.currentChatThread);
+    console.log("curentChatId", this.state.currentChatId);
+  }
+
+  handleNewChatClick = () => {
+    let activeChat = document.getElementsByClassName("active");
+    if (activeChat.length > 0){
+      activeChat[0].classList.remove("active");
+    }
+    this.setState({ currentChatId: Object.keys(this.state.chatLog).length }, () => {
+      this.setState(prevState => {
+        let chatLog = Object.assign({}, prevState.chatLog);
+        let currentChatId = Object.keys(chatLog).length;
+        chatLog[currentChatId] = [];
+        return { currentChatId, chatLog }
+      }, this.startNewChat);
+    });
   }
 
   handleTryAgain = (e) => {
@@ -58,9 +144,17 @@ class App extends Component {
   handleEnterKeyDown = () => {
     let textInput = this.state.textAreaInput;
     if (textInput !== ""){
-      this.setState({ chat: [...this.state.chat, {"role": "user", "content": textInput}]}, this.sendMessage);
+      this.setState({ currentChatThread: [...this.state.currentChatThread, {"role": "user", "content": textInput}]}, this.sendMessage);
       this.createUserChatBubble(textInput);
       this.setState({ textAreaInput: ""});
+      if (this.state.currentChatId === null){
+        this.setState(prevState => {
+          let chatLog = Object.assign({}, prevState.chatLog);
+          let currentChatId = Object.keys(chatLog).length;
+          chatLog[currentChatId] = [];
+          return { currentChatId, chatLog }
+        }, this.createNewChatButton);
+      }
     }
   }
 
@@ -88,11 +182,10 @@ class App extends Component {
     loadingBubble.classList.add("loading");
     loadingBubble.innerText = "Thinking...";
     threadDiv.appendChild(loadingBubble);
-    loadingBubble.scrollIntoView({behavior: 'smooth'});
+    loadingBubble.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'start'});
   }
 
   createErrorBubble() {
-    this.hideLoading();
     let threadDiv = document.getElementById("thread");
     let errorBubble = document.createElement("div");
     errorBubble.classList.add("message");
@@ -100,18 +193,17 @@ class App extends Component {
     errorBubble.innerText = "Something went wrong... click here to try again";
     errorBubble.onclick = this.handleTryAgain;
     threadDiv.appendChild(errorBubble);  
-    errorBubble.scrollIntoView({behavior: 'smooth'});
+    errorBubble.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'start'});
   }
 
   createGPTChatBubble(gptInput) {
-    this.hideLoading();
     let threadDiv = document.getElementById("thread");
     let gptChatBubble = document.createElement("div");
     gptChatBubble.classList.add("message");
     gptChatBubble.classList.add("from-chatbot");
     gptChatBubble.innerText = gptInput;
     threadDiv.appendChild(gptChatBubble);  
-    gptChatBubble.scrollIntoView({behavior: 'smooth'});
+    gptChatBubble.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'start'});
   }
 
   createUserChatBubble(userInput) {
@@ -121,28 +213,36 @@ class App extends Component {
     userChatBubble.classList.add("from-user");
     userChatBubble.innerText = userInput;
     threadDiv.appendChild(userChatBubble);  
-    userChatBubble.scrollIntoView({behavior: 'smooth'});
+    userChatBubble.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'start'});
   }
   
   render() {
     return (
       <div className="App">
-        <header className="App-header">
-          <h2 className="App-title">ChatGPT Clone</h2>
-          <div id="thread" className="chat-container"/>
-          <div className="textarea-container">
-            <textarea
-              id="chat-textarea"
-              className="chat-textarea"
-              rows = "3"
-              placeholder='Send a message'
-              value={this.state.textAreaInput}
-              onChange={this.handleTextAreaChange}
-              onKeyDown={this.handleKeyDown}
-            />
+        <div id="main-container">
+          <div id="sidebar">
+            <button
+              id="newChatButton"
+              onClick={this.handleNewChatClick}
+            >+ New Chat</button>
+            <div id="chat-history"/>
           </div>
-        </header>
+          <div id="chat-container">
+            <div id="thread"></div>
+            <div id="textarea-container">
+              <textarea
+                id="chat-textarea"
+                className="chat-textarea"
+                rows = "3"
+                placeholder='Send a message'
+                value={this.state.textAreaInput}
+                onChange={this.handleTextAreaChange}
+                onKeyDown={this.handleKeyDown}
+              />
+          </div>
+        </div>
       </div>
+    </div>
     );
   }
 }
