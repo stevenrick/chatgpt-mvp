@@ -1,5 +1,7 @@
 # ChatGPT MVP
 
+![ChatGPT MVP Screenshot](https://github.com/stevenrick/chatgpt-mvp/blob/main/media/chatgpt_mvp.png)
+
 This is a minimal working example of ChatGPT, outside of [ChatGPT](https://chat.openai.com/).
 
 In order to conduct human-subjects experiments with generative AI systems, we needed ChatGPT with a sort of psuedo federated access model so we could provision access to ChatGPT while conducting remote and unsupervised experiments.
