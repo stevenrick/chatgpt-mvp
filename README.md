@@ -1,6 +1,6 @@
 # ChatGPT MVP
 
-![ChatGPT MVP Screenshot](https://github.com/stevenrick/chatgpt-mvp/blob/main/media/chatgpt_mvp.png)
+![ChatGPT MVP Screenshot](https://github.com/stevenrick/chatgpt-mvp/blob/main/media/chatgpt_mvp_crop.png)
 
 This is a minimal working example of ChatGPT, outside of [ChatGPT](https://chat.openai.com/).
 
