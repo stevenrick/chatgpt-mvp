@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import axios from 'axios';
+import { v4 as uuid } from 'uuid';
 import './App.css';
 import './Chat.css';
 
@@ -8,6 +9,7 @@ class App extends Component {
   state = {
     textAreaInput: "",
     chatLog: {},
+    chatCount: 0,
     currentChatId: null,
     currentChatThread: []
   };
@@ -51,7 +53,10 @@ class App extends Component {
         })
         this.hideLoading();
       })
-      .catch(err => this.handleError(err));
+      .catch(err => {
+        this.hideLoading();
+        this.handleError(err);
+      });
   }
 
   clearThread = () => {
@@ -64,16 +69,17 @@ class App extends Component {
 
   populateThread = () => {
     let chatThread = this.state.chatLog[this.state.currentChatId];
-    this.setState({ currentChatThread: chatThread });
-    chatThread.forEach(msg => {
-      console.log(msg)
-      if (msg.role === "user"){
-        this.createUserChatBubble(msg.content);
-      }
-      if (msg.role === "assistant"){
-        this.createGPTChatBubble(msg.content);
-      }
-    });
+    if (chatThread){
+      this.setState({ currentChatThread: chatThread });
+      chatThread.forEach(msg => {
+        if (msg.role === "user"){
+          this.createUserChatBubble(msg.content);
+        }
+        if (msg.role === "assistant"){
+          this.createGPTChatBubble(msg.content);
+        }
+      });
+    }
   }
 
   resetThread = () => {
@@ -81,10 +87,18 @@ class App extends Component {
     this.populateThread();
   }
 
-  startNewChat = () => {
-    this.resetThread();
-    this.createNewChatButton();
-    this.debug();
+  startNewChat = async () => {
+    this.setState(prevState => {
+      let chatLog = Object.assign({}, prevState.chatLog);
+      let currentChatId = uuid();
+      chatLog[currentChatId] = [];
+      let chatCount = prevState.chatCount + 1;
+      return { currentChatId, chatLog, chatCount }
+    }, () => {
+      this.resetThread();
+      this.createNewChatButton();
+      this.debug();
+    });
   }
 
   handlePriorChatClick = (e) => {
@@ -104,7 +118,7 @@ class App extends Component {
     newChatButton.id = this.state.currentChatId;
     newChatButton.classList.add("priorChatButton");
     newChatButton.classList.add("active");
-    newChatButton.innerText = "Chat " + (this.state.currentChatId + 1);
+    newChatButton.innerText = "Chat " + (this.state.chatCount);
     newChatButton.onclick = this.handlePriorChatClick;
     chatHistory.appendChild(newChatButton);
   }
@@ -120,14 +134,7 @@ class App extends Component {
     if (activeChat.length > 0){
       activeChat[0].classList.remove("active");
     }
-    this.setState({ currentChatId: Object.keys(this.state.chatLog).length }, () => {
-      this.setState(prevState => {
-        let chatLog = Object.assign({}, prevState.chatLog);
-        let currentChatId = Object.keys(chatLog).length;
-        chatLog[currentChatId] = [];
-        return { currentChatId, chatLog }
-      }, this.startNewChat);
-    });
+    this.startNewChat();
   }
 
   handleTryAgain = (e) => {
@@ -141,20 +148,15 @@ class App extends Component {
     this.createErrorBubble();
   }
 
-  handleEnterKeyDown = () => {
+  handleEnterKeyDown = async () => {
     let textInput = this.state.textAreaInput;
     if (textInput !== ""){
-      this.setState({ currentChatThread: [...this.state.currentChatThread, {"role": "user", "content": textInput}]}, this.sendMessage);
-      this.createUserChatBubble(textInput);
-      this.setState({ textAreaInput: ""});
       if (this.state.currentChatId === null){
-        this.setState(prevState => {
-          let chatLog = Object.assign({}, prevState.chatLog);
-          let currentChatId = Object.keys(chatLog).length;
-          chatLog[currentChatId] = [];
-          return { currentChatId, chatLog }
-        }, this.createNewChatButton);
+        await this.startNewChat();
       }
+      this.setState({ currentChatThread: [...this.state.currentChatThread, {"role": "user", "content": textInput}]}, this.sendMessage);
+      this.setState({ textAreaInput: ""});
+      this.createUserChatBubble(textInput);
     }
   }
 
@@ -171,7 +173,9 @@ class App extends Component {
 
   hideLoading() {
     let loadingBubble = document.getElementById("loadingBubble");
-    loadingBubble.remove();
+    if (loadingBubble){
+      loadingBubble.remove();
+    }
   }
 
   showLoading() {
