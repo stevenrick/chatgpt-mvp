@@ -33,11 +33,9 @@ class App extends Component {
     };
 
     const response = await axios.post('api', postData, axiosConfig)
-
     if (response.status !== 200) {
       throw Error(response);
     }
-    console.log(response);
     return response;
   }
 
@@ -78,13 +76,25 @@ class App extends Component {
         if (msg.role === "assistant"){
           this.createGPTChatBubble(msg.content);
         }
+        this.showRegenerateButton();
       });
     }
   }
 
   resetThread = () => {
     this.clearThread();
+    this.hideRegenerateButton();
     this.populateThread();
+  }
+
+  showRegenerateButton = () => {
+    let regenerateButton = document.getElementById('regenerateButton');
+    regenerateButton.style.visibility = "visible";
+  }
+
+  hideRegenerateButton = () => {
+    let regenerateButton = document.getElementById('regenerateButton');
+    regenerateButton.style.visibility = "hidden";
   }
 
   startNewChat = async () => {
@@ -97,8 +107,15 @@ class App extends Component {
     }, () => {
       this.resetThread();
       this.createNewChatButton();
-      this.debug();
     });
+  }
+
+  handleRegenerateClick = () => {
+    let thread = document.getElementById("thread");
+    thread.removeChild(thread.lastChild);
+    let chatThread = this.state.currentChatThread;
+    chatThread.pop();
+    this.setState({ currentChatThread: chatThread }, this.sendMessage)
   }
 
   handlePriorChatClick = (e) => {
@@ -121,6 +138,7 @@ class App extends Component {
     newChatButton.innerText = "Chat " + (this.state.chatCount);
     newChatButton.onclick = this.handlePriorChatClick;
     chatHistory.appendChild(newChatButton);
+    newChatButton.scrollIntoView({behavior: 'smooth', block: 'nearest', inline: 'start'});
   }
 
   debug = () => {
@@ -138,7 +156,6 @@ class App extends Component {
   }
 
   handleTryAgain = (e) => {
-    console.log("try again clicked");
     e.target.remove();
     this.sendMessage();
   }
@@ -175,6 +192,7 @@ class App extends Component {
     let loadingBubble = document.getElementById("loadingBubble");
     if (loadingBubble){
       loadingBubble.remove();
+      this.showRegenerateButton();
     }
   }
 
@@ -228,11 +246,19 @@ class App extends Component {
             <button
               id="newChatButton"
               onClick={this.handleNewChatClick}
-            >+ New Chat</button>
+            >
+              + New Chat
+            </button>
             <div id="chat-history"/>
           </div>
           <div id="chat-container">
             <div id="thread"></div>
+            <button
+              id="regenerateButton"
+              onClick={this.handleRegenerateClick}
+            >
+              Regenerate
+            </button>
             <div id="textarea-container">
               <textarea
                 id="chat-textarea"
