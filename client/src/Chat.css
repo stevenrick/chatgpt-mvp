@@ -12,7 +12,7 @@ body {
 }
 
 #sidebar {
-    width: 150px;
+    flex: 0 0 150px;
     height: 100vh;
     margin: 0;
     padding: 8px;
@@ -118,6 +118,7 @@ body {
 
 .message {
     width: 90%;
+    max-width: 90%;
     color: #333;
     padding: 10px;
     margin: auto;
